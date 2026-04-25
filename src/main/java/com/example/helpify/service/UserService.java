@@ -7,6 +7,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 
 public class UserService {
@@ -21,7 +23,25 @@ public class UserService {
         if (!user.getEmail().endsWith("@bennett.edu.in")) {
             throw new RuntimeException("Only college email allowed");
         }
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("User already exists");
+        }
 
+        if (!user.getEmail().endsWith("@bennett.edu.in")) {
+            throw new RuntimeException("Only college email allowed");
+        }
+        Optional<User> existing = userRepository.findByEmail(user.getEmail());
+
+        if (existing.isPresent()) {
+            User oldUser = existing.get();
+
+            String otp = generateOTP();
+            oldUser.setOtp(otp);
+
+            sendEmail(oldUser.getEmail(), otp);
+
+            return userRepository.save(oldUser);
+        }
         user.setVerified(false);
 
         String otp = generateOTP();
@@ -74,6 +94,7 @@ public class UserService {
         msg.setTo(to);
         msg.setSubject("Verify your account");
         msg.setText("Your OTP is: " + otp);
+        System.out.println("OTP SENT: " + otp);
 
         mailSender.send(msg);
     }

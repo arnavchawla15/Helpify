@@ -21,8 +21,8 @@ public class Order {
     private int reward;
 
     private String status; // POSTED, ACCEPTED, DELIVERED
-    private double lat;
-    private double lng;
+    private Double lat = 0.0;
+    private Double lng=0.0;
     private String createdBy;
     private String acceptedBy;
 }

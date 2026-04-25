@@ -10,7 +10,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
 public class OrderController {
 
     @Autowired
@@ -27,10 +27,16 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/accept")
-    public Order accept(@PathVariable String id, @RequestParam String user) {
-        return orderService.acceptOrder(id, user);
-    }
+    public Order accept(@PathVariable String id, HttpSession session) {
 
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Not logged in");
+        }
+
+        return orderService.acceptOrder(id, user.getEmail());
+    }
     @PutMapping("/{id}/complete")
     public Order complete(@PathVariable String id) {
         return orderService.completeOrder(id);

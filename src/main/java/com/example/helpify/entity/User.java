@@ -5,22 +5,34 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Document(collection = "users")
 public class User {
     @Id
     private String id;
     private String username;
+    @Indexed(unique = true)
     private String email;
     private String password;
 
-    private boolean verified = false;
+    private Boolean verified = false;
 
     private String otp; // for email verification
 
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
+
+
+    public boolean isVerified() {
+        if(verified == null) {
+            return false;
+        }
+        return verified;
+    }
 }
