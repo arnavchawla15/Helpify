@@ -3,6 +3,7 @@ package com.example.helpify.service;
 import com.example.helpify.entity.Order;
 import com.example.helpify.entity.User;
 import com.example.helpify.repository.OrderRepository;
+import com.example.helpify.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,22 +13,36 @@ import java.util.*;
 public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    public Order createOrder(Order order, User user) {
-        order.setPostedBy(user.getEmail());
+    public Order createOrder(Order order, String email) {
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        order.setPostedBy(email);
+        order.setPostedByName(user.getUsername());
+        order.setPostedByPhone(user.getPhone());
+
         order.setCreatedAt(new Date());
+
         return orderRepository.save(order);
     }
-
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
     public Order acceptOrder(String id, String email, String name) {
+
         Order o = orderRepository.findById(id).orElseThrow();
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+
         o.setStatus("ACCEPTED");
         o.setAcceptedBy(email);
-        o.setAcceptedByName(name);
+        o.setAcceptedByName(user.getUsername());
+        o.setAcceptedByPhone(user.getPhone());
+
         return orderRepository.save(o);
     }
 

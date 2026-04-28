@@ -2,7 +2,9 @@
 
 
     import com.example.helpify.entity.User;
+    import com.example.helpify.service.JwtService;
     import com.example.helpify.service.UserService;
+    import jakarta.servlet.http.HttpServletRequest;
     import jakarta.servlet.http.HttpSession;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.ResponseEntity;
@@ -15,22 +17,29 @@
     public class UserController {
         @Autowired
         private UserService userService;
+        @Autowired
+        private JwtService jwtService;
 
+        // ===== REGISTER =====
         @PostMapping("/register")
         public User register(@RequestBody User user) {
             return userService.register(user);
         }
-
+        // ===== LOGIN (JWT) =====
         @PostMapping("/login")
-        public ResponseEntity<?> login(@RequestBody User user, HttpSession session) {
+        public ResponseEntity<?> login(@RequestBody User user) {
             try {
                 User loggedInUser = userService.login(user.getEmail(), user.getPassword());
-                session.setAttribute("user", loggedInUser);
-                return ResponseEntity.ok(loggedInUser); // 👈 RETURN USER
+
+                String token = jwtService.generateToken(loggedInUser.getEmail());
+
+                return ResponseEntity.ok(Map.of(
+                        "token", token,
+                        "user", loggedInUser
+                ));
+
             } catch (Exception e) {
-                return ResponseEntity
-                        .status(400)
-                        .body(e.getMessage()); // 👈 send clean error
+                return ResponseEntity.status(400).body(e.getMessage());
             }
         }
 
@@ -40,21 +49,21 @@
             return userService.verifyOTP(email, otp);
         }
 
-        // ===== CHECK SESSION =====
+        // ===== GET CURRENT USER (JWT BASED) =====
         @GetMapping("/me")
-        public ResponseEntity<?> getUser(HttpSession session) {
-            User user = (User) session.getAttribute("user");
+        public ResponseEntity<?> me(HttpServletRequest req) {
+            String email = (String) req.getAttribute("userEmail");
 
-            if (user == null) {
+            if (email == null) {
                 return ResponseEntity.status(401).body("Not logged in");
             }
 
+            User user = userService.findByEmail(email);
             return ResponseEntity.ok(user);
         }
         // ===== LOGOUT =====
         @PostMapping("/logout")
-        public String logout(HttpSession session) {
-            session.invalidate();
-            return "Logged out";
+        public String logout() {
+            return "Logged out (client should delete token)";
         }
     }

@@ -29,4 +29,8 @@ public class Order {
     private String acceptedBy;
     private String acceptedByName;
     private Date createdAt = new Date();
+    private String postedByName;
+    private String postedByPhone;
+
+    private String acceptedByPhone;
 }
