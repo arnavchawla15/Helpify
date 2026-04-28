@@ -12,8 +12,10 @@ import java.util.*;
 public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
-    public Order createOrder(Order order) {
-        order.setStatus("POSTED");
+
+    public Order createOrder(Order order, User user) {
+        order.setPostedBy(user.getEmail());
+        order.setCreatedAt(new Date());
         return orderRepository.save(order);
     }
 
@@ -21,11 +23,12 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public Order acceptOrder(String id, String user) {
-        Order order = orderRepository.findById(id).orElseThrow();
-        order.setStatus("ACCEPTED");
-        order.setAcceptedBy(user);
-        return orderRepository.save(order);
+    public Order acceptOrder(String id, String email, String name) {
+        Order o = orderRepository.findById(id).orElseThrow();
+        o.setStatus("ACCEPTED");
+        o.setAcceptedBy(email);
+        o.setAcceptedByName(name);
+        return orderRepository.save(o);
     }
 
     public Order completeOrder(String id) {
@@ -59,6 +62,19 @@ public class OrderService {
                         order.getLng()
                 ) < 1.0) // 1 km radius
                 .toList();
+    }
+    public Order cancelOrder(String id, String email) {
+        Order o = orderRepository.findById(id).orElseThrow();
+
+        if (!email.equals(o.getAcceptedBy())) {
+            throw new RuntimeException("Not your order");
+        }
+
+        o.setStatus("POSTED");
+        o.setAcceptedBy(null);
+        o.setAcceptedByName(null);
+
+        return orderRepository.save(o);
     }
 
 }

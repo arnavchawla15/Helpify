@@ -23,13 +23,14 @@ public class UserService {
         if (!user.getEmail().endsWith("@bennett.edu.in")) {
             throw new RuntimeException("Only college email allowed");
         }
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(user.getEmail().toLowerCase()).isPresent()) {
             throw new RuntimeException("User already exists");
         }
 
         if (!user.getEmail().endsWith("@bennett.edu.in")) {
             throw new RuntimeException("Only college email allowed");
         }
+        user.setEmail(user.getEmail().toLowerCase());
         Optional<User> existing = userRepository.findByEmail(user.getEmail());
 
         if (existing.isPresent()) {
@@ -53,7 +54,7 @@ public class UserService {
     }
     // ===== LOGIN =====
     public User login(String email, String password) {
-
+        email = email.toLowerCase();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

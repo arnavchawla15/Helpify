@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+
 @Data
 @Builder
 @Document(collection = "orders")
@@ -23,6 +25,8 @@ public class Order {
     private String status; // POSTED, ACCEPTED, DELIVERED
     private Double lat = 0.0;
     private Double lng=0.0;
-    private String createdBy;
+    private String postedBy;
     private String acceptedBy;
+    private String acceptedByName;
+    private Date createdAt = new Date();
 }

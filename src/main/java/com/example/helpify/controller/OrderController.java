@@ -13,7 +13,7 @@ import java.util.*;
 @CrossOrigin(
         origins = {
                 "http://127.0.0.1:5500",
-                "https://helpify-frontend-two.vercel.app/"
+                "https://helpify-frontend-two.vercel.app"
         },
         allowCredentials = "true"
 )
@@ -23,10 +23,15 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping
-    public Order create(@RequestBody Order order) {
-        return orderService.createOrder(order);
-    }
+    public Order create(@RequestBody Order order, HttpSession session) {
+        User user = (User) session.getAttribute("user");
 
+        if (user == null) {
+            throw new RuntimeException("Not logged in");
+        }
+
+        return orderService.createOrder(order, user);
+    }
     @GetMapping
     public List<Order> getAll() {
         return orderService.getAllOrders();
@@ -34,15 +39,10 @@ public class OrderController {
 
     @PutMapping("/{id}/accept")
     public Order accept(@PathVariable String id, HttpSession session) {
-
         User user = (User) session.getAttribute("user");
-
-        if (user == null) {
-            throw new RuntimeException("Not logged in");
-        }
-
-        return orderService.acceptOrder(id, user.getEmail());
+        return orderService.acceptOrder(id, user.getEmail(), user.getUsername());
     }
+
     @PutMapping("/{id}/complete")
     public Order complete(@PathVariable String id) {
         return orderService.completeOrder(id);
@@ -57,6 +57,17 @@ public class OrderController {
         }
 
         return orderService.getNearbyOrders(user);
+    }
+    @PutMapping("/{id}/cancel")
+    public Order cancel(@PathVariable String id, HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Not logged in");
+        }
+
+        return orderService.cancelOrder(id, user.getEmail());
     }
 }
 
