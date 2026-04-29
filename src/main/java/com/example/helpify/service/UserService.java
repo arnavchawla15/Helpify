@@ -107,5 +107,23 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+    public User updateProfile(String email, User updatedData) {
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        if (updatedData.getUsername() != null)
+            user.setUsername(updatedData.getUsername());
+
+        if (updatedData.getPhone() != null)
+            user.setPhone(updatedData.getPhone());
+
+        if (updatedData.getHostelBlock() != null)
+            user.setHostelBlock(updatedData.getHostelBlock());
+
+        if (updatedData.getRoomNumber() != null)
+            user.setRoomNumber(updatedData.getRoomNumber());
+
+        return userRepository.save(user);
+    }
 
 }

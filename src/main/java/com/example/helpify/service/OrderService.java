@@ -28,8 +28,18 @@ public class OrderService {
 
         return orderRepository.save(order);
     }
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public List<Order> getAllOrders(String email) {
+
+        List<Order> all = orderRepository.findAll();
+
+        return all.stream()
+                .filter(o -> {
+                    if ("DELIVERED".equals(o.getStatus())) {
+                        return email.equals(o.getPostedBy()) || email.equals(o.getAcceptedBy());
+                    }
+                    return true; // show POSTED + ACCEPTED to all
+                })
+                .toList();
     }
 
     public Order acceptOrder(String id, String email, String name) {
@@ -96,6 +106,34 @@ public class OrderService {
         o.setAcceptedByName(null);
 
         return orderRepository.save(o);
+    }
+    public Map<String, Object> getStats(String email) {
+
+        List<Order> orders = orderRepository.findAll();
+
+        int totalPosted = (int) orders.stream()
+                .filter(o -> email.equals(o.getPostedBy()))
+                .count();
+
+        int delivered = (int) orders.stream()
+                .filter(o -> email.equals(o.getAcceptedBy()) && "DELIVERED".equals(o.getStatus()))
+                .count();
+
+        int active = (int) orders.stream()
+                .filter(o -> "POSTED".equals(o.getStatus()))
+                .count();
+
+        int earnings = orders.stream()
+                .filter(o -> email.equals(o.getAcceptedBy()) && "DELIVERED".equals(o.getStatus()))
+                .mapToInt(o -> o.getReward() != 0 ? o.getReward() : 0)
+                .sum();
+
+        return Map.of(
+                "totalRequests", totalPosted,
+                "delivered", delivered,
+                "active", active,
+                "earnings", earnings
+        );
     }
 
 }

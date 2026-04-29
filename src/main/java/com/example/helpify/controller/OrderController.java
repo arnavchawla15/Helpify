@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -34,8 +35,15 @@ public class OrderController {
 
     // ===== GET ALL ORDERS =====
     @GetMapping
-    public List<Order> getAll() {
-        return orderService.getAllOrders();
+    public List<Order> getAll(HttpServletRequest req) {
+
+        String email = (String) req.getAttribute("userEmail");
+
+        if (email == null) {
+            throw new RuntimeException("Not logged in");
+        }
+
+        return orderService.getAllOrders(email);
     }
 
     // ===== ACCEPT ORDER =====
@@ -90,5 +98,16 @@ public class OrderController {
         User user = userService.findByEmail(email);
 
         return orderService.getNearbyOrders(user);
+    }
+    @GetMapping("/stats")
+    public Map<String, Object> stats(HttpServletRequest req) {
+
+        String email = (String) req.getAttribute("userEmail");
+
+        if (email == null) {
+            throw new RuntimeException("Not logged in");
+        }
+
+        return orderService.getStats(email);
     }
 }

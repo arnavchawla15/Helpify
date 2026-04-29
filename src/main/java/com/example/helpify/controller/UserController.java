@@ -73,4 +73,25 @@
         public String logout() {
             return "Logged out (client should delete token)";
         }
+
+        //Update
+        @PutMapping("/update")
+        public ResponseEntity<?> updateProfile(
+                @RequestBody User updatedUser,
+                HttpServletRequest req
+        ) {
+            try {
+                String email = (String) req.getAttribute("userEmail");
+
+                if (email == null) {
+                    return ResponseEntity.status(401).body("Not logged in");
+                }
+
+                User user = userService.updateProfile(email, updatedUser);
+                return ResponseEntity.ok(user);
+
+            } catch (Exception e) {
+                return ResponseEntity.status(400).body(e.getMessage());
+            }
+        }
     }

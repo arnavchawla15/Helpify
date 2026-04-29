@@ -28,6 +28,8 @@ public class User {
     private Double latitude;
     private Double longitude;
     private String phone;
+    private String hostelBlock;
+    private String roomNumber;
 
 
     public boolean isVerified() {
